@@ -6,10 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Yom3n/webscrapper/realEstateRecords"
+	"github.com/Yom3n/webscrapper/models"
 )
-
-
 
 func ScrapRealEstates() {
 	scrapper := NewScrapper()
@@ -18,7 +16,8 @@ func ScrapRealEstates() {
 		log.Fatal()
 		return
 	}
-	getRealEstatesFromHtml(html)
+	res := getRealEstatesFromHtml(html)
+	res.Print()
 
 }
 
@@ -30,8 +29,8 @@ const titleEndKey = "\""
 const priceKey = `\"regularPrice\":{\"value\":`
 const priceEndKey = ","
 
-func getRealEstatesFromHtml(html string) []realEstateRecords.RealEstate {
-	realEstates := []realEstateRecords.RealEstate{}
+func getRealEstatesFromHtml(html string) models.RealEstatesRecrods {
+	realEstates := models.RealEstatesRecrods{}
 	for {
 		var title string
 		var price string
@@ -43,14 +42,12 @@ func getRealEstatesFromHtml(html string) []realEstateRecords.RealEstate {
 		if price == "" {
 			continue
 		}
-		fmt.Println(title)
-		fmt.Println(price)
 		priceInt, err := strconv.Atoi(price)
 		if err != nil {
 			fmt.Println(err.Error())
 			continue
 		}
-		realEstates = append(realEstates, realEstateRecords.RealEstate{
+		realEstates = append(realEstates, models.RealEstate{
 			Title:      title,
 			PriceZloty: priceInt,
 			AreaInM2:   0,

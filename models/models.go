@@ -1,10 +1,10 @@
-package realEstateRecords
+package models
 
 import "fmt"
 
 type RealEstatesRecrods []RealEstate
 
-func (r *RealEstatesRecrods) print() {
+func (r *RealEstatesRecrods) Print() {
 	for i, realEstate := range *r {
 		fmt.Println(i+1, ".  ", realEstate.Title, "  ", realEstate.PriceZloty, "zł")
 	}
