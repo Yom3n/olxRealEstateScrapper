@@ -6,12 +6,12 @@ type RealEstatesRecrods []RealEstate
 
 func (r *RealEstatesRecrods) Print() {
 	for i, realEstate := range *r {
-		fmt.Println(i+1, ".  ", realEstate.Title, "  ", realEstate.PriceZloty, "zł")
+		fmt.Println(i+1, ".  ", realEstate.Title, "  ", realEstate.AreaInM2, "m2 ", realEstate.PriceZloty, "zł")
 	}
 }
 
 type RealEstate struct {
 	Title      string
 	PriceZloty int
-	AreaInM2   int
+	AreaInM2   float32
 }

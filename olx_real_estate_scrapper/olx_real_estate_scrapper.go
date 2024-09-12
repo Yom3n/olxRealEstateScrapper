@@ -23,17 +23,21 @@ func ScrapRealEstates() {
 
 // After this key starts ad title. Ends with "
 const titleKey = `\"title\":\"`
-const titleEndKey = "\""
+const titleEndKey = `\",\"`
 
 // /\"regularPrice\":{\"value\":349000,
 const priceKey = `\"regularPrice\":{\"value\":`
 const priceEndKey = ","
+
+const areaKey = `\"Powierzchnia\",\"type\":\"input\",\"value\":\"`
+const areaEndKey = ` m²\",`
 
 func getRealEstatesFromHtml(html string) models.RealEstatesRecrods {
 	realEstates := models.RealEstatesRecrods{}
 	for {
 		var title string
 		var price string
+		var area float32
 		html, title = getValueFromHtml(html, titleKey, titleEndKey)
 		if title == "" {
 			break
@@ -42,6 +46,20 @@ func getRealEstatesFromHtml(html string) models.RealEstatesRecrods {
 		if price == "" {
 			continue
 		}
+
+		var areaStr = ""
+		html, areaStr = getValueFromHtml(html, areaKey, areaEndKey)
+		if areaStr == "" {
+			continue
+		}
+		areaStr = strings.Replace(areaStr, ",", ".", 1)
+		parsedArea, err := strconv.ParseFloat(areaStr, 32)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		area = float32(parsedArea)
+
 		priceInt, err := strconv.Atoi(price)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -50,7 +68,7 @@ func getRealEstatesFromHtml(html string) models.RealEstatesRecrods {
 		realEstates = append(realEstates, models.RealEstate{
 			Title:      title,
 			PriceZloty: priceInt,
-			AreaInM2:   0,
+			AreaInM2:   area,
 		})
 	}
 	return realEstates
