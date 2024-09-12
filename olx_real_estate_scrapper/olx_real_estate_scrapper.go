@@ -11,14 +11,25 @@ import (
 
 func ScrapRealEstates() {
 	scrapper := NewScrapper()
-	html, err := scrapper.GetPageHTMLContent("https://www.olx.pl/nieruchomosci/mieszkania/sprzedaz/")
-	if err != nil {
-		log.Fatal()
-		return
+	numPaginationPages := 1
+	for page := 1; page <= numPaginationPages; page++ {
+		fmt.Println(numPaginationPages)
+		url := "https://www.olx.pl/nieruchomosci/mieszkania/sprzedaz/?page=" + strconv.Itoa(page)
+		html, err := scrapper.GetPageHTMLContent(url)
+		if err != nil {
+			log.Fatal()
+			return
+		}
+		res := getRealEstatesFromHtml(html)
+		res.Print()
+		if numPaginationPages == 1 {
+			_, maxPageStr := getValueFromHtml(html, numPaginationPagesKey, numPaginationPagesEndKey)
+			numPaginationPages, err = strconv.Atoi(maxPageStr)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 	}
-	res := getRealEstatesFromHtml(html)
-	res.Print()
-
 }
 
 // After this key starts ad title. Ends with "
@@ -31,6 +42,9 @@ const priceEndKey = ","
 
 const areaKey = `\"Powierzchnia\",\"type\":\"input\",\"value\":\"`
 const areaEndKey = ` m²\",`
+
+const numPaginationPagesKey = `...</li><li data-testid="pagination-list-item" aria-label="Page `
+const numPaginationPagesEndKey = `"`
 
 func getRealEstatesFromHtml(html string) models.RealEstatesRecrods {
 	realEstates := models.RealEstatesRecrods{}
