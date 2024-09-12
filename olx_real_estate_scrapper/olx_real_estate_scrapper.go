@@ -11,7 +11,7 @@ import (
 
 func ScrapRealEstates() {
 	scrapper := NewScrapper()
-	html, err := scrapper.GetPageHTMLContent("https://www.olx.pl/nieruchomosci/mieszkania/")
+	html, err := scrapper.GetPageHTMLContent("https://www.olx.pl/nieruchomosci/mieszkania/sprzedaz/")
 	if err != nil {
 		log.Fatal()
 		return
