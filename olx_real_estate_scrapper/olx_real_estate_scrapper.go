@@ -7,29 +7,63 @@ import (
 	"strings"
 
 	"github.com/Yom3n/webscrapper/models"
+	"github.com/Yom3n/webscrapper/web_scrapper"
 )
 
-func ScrapRealEstates() {
-	scrapper := NewScrapper()
-	numPaginationPages := 1
-	for page := 1; page <= numPaginationPages; page++ {
-		fmt.Println(numPaginationPages)
-		url := "https://www.olx.pl/nieruchomosci/mieszkania/sprzedaz/?page=" + strconv.Itoa(page)
-		html, err := scrapper.GetPageHTMLContent(url)
-		if err != nil {
-			log.Fatal()
-			return
-		}
-		res := getRealEstatesFromHtml(html)
-		res.Print()
-		if numPaginationPages == 1 {
-			_, maxPageStr := getValueFromHtml(html, numPaginationPagesKey, numPaginationPagesEndKey)
-			numPaginationPages, err = strconv.Atoi(maxPageStr)
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
+type OlxRealEstateScrapper struct {
+	WebScrapper *web_scrapper.WebScrapper
+}
+
+func (o *OlxRealEstateScrapper) ScrapRealEstates() {
+	url := getUrlWithPage(1)
+	firstPage, maxPages := o.scrapSinglePage(url, nil)
+	firstPage.Print()
+	if maxPages == -1 {
+		log.Fatal("Coudln't scap num pages")
 	}
+	if maxPages == 1 {
+		// TODO Return first page value
+		return
+	}
+
+	channel := make(chan models.RealEstatesRecrods)
+	for page := 2; page <= maxPages; page++ {
+		go o.scrapSinglePage(getUrlWithPage(page), channel)
+	}
+
+	for page := 2; page <= maxPages; page++ {
+		estates := <-channel
+		estates.Print()
+	}
+}
+
+func getUrlWithPage(page int) string {
+	pageStr := strconv.Itoa(page)
+	return "https://www.olx.pl/nieruchomosci/mieszkania/sprzedaz/?page=" + pageStr
+}
+
+// Provide full url with params, pages etc.
+// ex: https://www.olx.pl/nieruchomosci/mieszkania/sprzedaz/?page=1
+func (o *OlxRealEstateScrapper) scrapSinglePage(url string, channel chan models.RealEstatesRecrods) (estatesPage models.RealEstatesRecrods, numPages int) {
+	html, err := o.WebScrapper.GetPageHTMLContent(url)
+	if err != nil {
+		log.Fatal()
+		return
+	}
+	res := getRealEstatesFromHtml(html)
+	_, maxPageStr := getValueFromHtml(html, numPaginationPagesKey, numPaginationPagesEndKey)
+	numPaginationPages, err := strconv.Atoi(maxPageStr)
+	if err != nil {
+		fmt.Println(err)
+		if channel != nil {
+			channel <- res
+		}
+		return res, -1
+	}
+	if channel != nil {
+		channel <- res
+	}
+	return res, numPaginationPages
 }
 
 // After this key starts ad title. Ends with "
