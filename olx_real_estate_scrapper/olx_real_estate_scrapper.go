@@ -42,6 +42,7 @@ func (o *OlxRealEstateScrapper) ScrapRealEstates() models.RealEstatesRecrods {
 	} else {
 		pagesLimit = maxPages
 	}
+	log.Printf("Scrapping %d out of %d pages", pagesLimit, maxPages)
 	for page := 2; page <= pagesLimit; page++ {
 		go o.scrapSinglePage(getUrlWithPage(page), channel)
 	}
