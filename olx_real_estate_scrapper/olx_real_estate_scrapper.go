@@ -14,16 +14,17 @@ type OlxRealEstateScrapper struct {
 	WebScrapper *web_scrapper.WebScrapper
 }
 
-func (o *OlxRealEstateScrapper) ScrapRealEstates() {
+func (o *OlxRealEstateScrapper) ScrapRealEstates() models.RealEstatesRecrods {
+	log.Println("Start scrapping...")
 	url := getUrlWithPage(1)
 	firstPage, maxPages := o.scrapSinglePage(url, nil)
-	firstPage.Print()
 	if maxPages == -1 {
-		log.Fatal("Coudln't scap num pages")
+		log.Fatal("Coudln't get num pages")
 	}
+
+	estatesOutput := firstPage
 	if maxPages == 1 {
-		// TODO Return first page value
-		return
+		return estatesOutput
 	}
 
 	channel := make(chan models.RealEstatesRecrods)
@@ -33,16 +34,19 @@ func (o *OlxRealEstateScrapper) ScrapRealEstates() {
 
 	for page := 2; page <= maxPages; page++ {
 		estates := <-channel
-		estates.Print()
+		estatesOutput = append(estatesOutput, estates...)
 	}
+	return estatesOutput
 }
 
+// Generates url to scrap containing page param
 func getUrlWithPage(page int) string {
 	pageStr := strconv.Itoa(page)
 	return "https://www.olx.pl/nieruchomosci/mieszkania/sprzedaz/?page=" + pageStr
 }
 
 // Provide full url with params, pages etc.
+// if used id goroutine use [channel] to get the output
 // ex: https://www.olx.pl/nieruchomosci/mieszkania/sprzedaz/?page=1
 func (o *OlxRealEstateScrapper) scrapSinglePage(url string, channel chan models.RealEstatesRecrods) (estatesPage models.RealEstatesRecrods, numPages int) {
 	html, err := o.WebScrapper.GetPageHTMLContent(url)

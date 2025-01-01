@@ -1,7 +1,7 @@
 package main
 
 import (
-	olxrealestatescrapper "github.com/Yom3n/webscrapper/olx_real_estate_scrapper"
+	"github.com/Yom3n/webscrapper/olx_real_estate_scrapper"
 	"github.com/Yom3n/webscrapper/web_scrapper"
 )
 
@@ -11,5 +11,6 @@ func main() {
 	olxScrapper := olxrealestatescrapper.OlxRealEstateScrapper{
 		WebScrapper: &scrapper,
 	}
-	olxScrapper.ScrapRealEstates()
+	realEstates := olxScrapper.ScrapRealEstates()
+	realEstates.Print()
 }
