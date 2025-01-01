@@ -11,7 +11,15 @@ import (
 )
 
 type OlxRealEstateScrapper struct {
+	pagesLimit  int
 	WebScrapper *web_scrapper.WebScrapper
+}
+
+func NewOlxRealEstatesScrapper(webScrapper *web_scrapper.WebScrapper) OlxRealEstateScrapper {
+	return OlxRealEstateScrapper{
+		pagesLimit:  10,
+		WebScrapper: webScrapper,
+	}
 }
 
 func (o *OlxRealEstateScrapper) ScrapRealEstates() models.RealEstatesRecrods {
@@ -28,11 +36,17 @@ func (o *OlxRealEstateScrapper) ScrapRealEstates() models.RealEstatesRecrods {
 	}
 
 	channel := make(chan models.RealEstatesRecrods)
-	for page := 2; page <= maxPages; page++ {
+	var pagesLimit int
+	if o.pagesLimit < maxPages {
+		pagesLimit = o.pagesLimit
+	} else {
+		pagesLimit = maxPages
+	}
+	for page := 2; page <= pagesLimit; page++ {
 		go o.scrapSinglePage(getUrlWithPage(page), channel)
 	}
 
-	for page := 2; page <= maxPages; page++ {
+	for page := 2; page <= pagesLimit; page++ {
 		estates := <-channel
 		estatesOutput = append(estatesOutput, estates...)
 	}
