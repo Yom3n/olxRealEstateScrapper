@@ -69,8 +69,8 @@ func (o *OlxRealEstateScrapper) scrapSinglePage(url string, channel chan models.
 		log.Fatal()
 		return
 	}
-	res := getRealEstatesFromHtml(html)
-	_, maxPageStr := getValueFromHtml(html, numPaginationPagesKey, numPaginationPagesEndKey)
+	res := getRealEstatesFromHtml(string(html))
+	_, maxPageStr := getValueFromHtml(string(html), numPaginationPagesKey, numPaginationPagesEndKey)
 	numPaginationPages, err := strconv.Atoi(maxPageStr)
 	if err != nil {
 		fmt.Println(err)

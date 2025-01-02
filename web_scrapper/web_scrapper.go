@@ -1,26 +1,36 @@
 package web_scrapper
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 )
 
 type WebScrapper struct {
+	client *http.Client
 }
 
-func NewWebScrapper() WebScrapper {
-	return WebScrapper{}
+func NewWebScrapper(client *http.Client) *WebScrapper {
+	return &WebScrapper{client: client}
 }
 
-func (s *WebScrapper) GetPageHTMLContent(url string) (content string, err error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return "", err
+const maxReadSize = 10 * 1024 * 1024 // 10mb
+
+func (s *WebScrapper) GetPageHTMLContent(url string) (content []byte, err error) {
+	resp, err := s.client.Get(url)
+	if resp.StatusCode != http.StatusOK {
+		return []byte{}, fmt.Errorf("failed to fetch %s. Status code: %s", url, resp.Status)
 	}
-	html, err := io.ReadAll(resp.Body)
-	resp.Body.Close()
 	if err != nil {
-		return "", err
+		return []byte{}, fmt.Errorf("failed to fetch %s: %w", url, err)
 	}
-	return string(html), nil
+
+	defer resp.Body.Close()
+	limitedReader := io.LimitReader(resp.Body, maxReadSize)
+	html, err := io.ReadAll(limitedReader)
+	if err != nil {
+		return []byte{}, fmt.Errorf("failed to read data from %s: %w", url, err)
+	}
+
+	return html, nil
 }
