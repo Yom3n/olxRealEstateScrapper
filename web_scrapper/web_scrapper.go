@@ -6,11 +6,16 @@ import (
 	"net/http"
 )
 
-type WebScrapper struct {
-	client *http.Client
+// / Create HttpClient interface for testing purpose
+type HttpClient interface {
+	Get(url string) (resp *http.Response, err error)
 }
 
-func NewWebScrapper(client *http.Client) *WebScrapper {
+type WebScrapper struct {
+	client HttpClient
+}
+
+func NewWebScrapper(client HttpClient) *WebScrapper {
 	return &WebScrapper{client: client}
 }
 
